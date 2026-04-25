@@ -1,4 +1,4 @@
-# version: '3.8' # onsolete since docker compose 2.20+
+name: chat-infra
 
 services:
   postgres:
@@ -7,7 +7,7 @@ services:
     environment:
       # POSTGRES_DB: ${DB_NAME} # not needed since we have init scripts that create the database and tables
       # POSTGRES_USER: ${DB_USER} # not needed since we have init scripts that create the user with the same name as the database
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
     ports:
       - "5432:5432"
     volumes:
@@ -55,6 +55,6 @@ services:
 
 networks:
   chat-demo-net:
-    name: chat-demo-net   # same fixed network name     
+    name: chat-demo-net   # keep the same network name
     driver: bridge #  default network type - creates a private internal network on a single host   
-    # driver: host # The container shares the host machine’s network stack directly          
+         

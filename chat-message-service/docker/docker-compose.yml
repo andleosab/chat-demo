@@ -1,4 +1,4 @@
-# version: "3.9" deprecated
+name: chat-message-service
 
 services:
   chat-message-service:

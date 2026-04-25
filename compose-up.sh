@@ -4,7 +4,7 @@ set -e
 echo "======================================="
 echo "Starting infra..."
 echo "======================================="
-(cd chat-infra/docker && cp env-example .env && ./start-services-ephemeral.sh && rm .env)
+(cd chat-infra/docker [ -f .env ] || cp env-example .env && ./start-services-ephemeral.sh)
 
 # ------------------ wait for Postgres ------------------
 POSTGRES_CONTAINER=chat-postgres-ephemeral   # adjust if container_name is different

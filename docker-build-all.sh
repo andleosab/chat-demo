@@ -20,6 +20,6 @@ echo "======================================="
 echo "======================================="
 echo "Building chat-web image..."
 echo "======================================="
-(cd chat-web && cp env-example .env.local.docker && ./build-docker.sh && rm .env.local.docker)
+(cd chat-web && ./build-docker.sh)
 
 echo "Images built successfully."
