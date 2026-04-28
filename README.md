@@ -1,4 +1,4 @@
-# chat-demo
+# Polyglot Chat Demo
 
 A working polyglot chat system demonstrating how **Spring Boot, Go, Quarkus, and SvelteKit** integrate in a single distributed application — JWT propagation across services, Kafka-backed real-time fan-out, a BFF pattern that owns auth transparently, and a WebSocket delivery layer designed with horizontal K8s scaling in mind.
 
@@ -57,8 +57,8 @@ This repository uses **Git submodules**. Each directory is a standalone service 
 Prerequisites: Docker and Docker Compose.
 
 ```bash
-git clone --recurse-submodules <repo-url>
-cd chat-demo
+git clone https://github.com/andleosab/polyglot-chat-system.git
+cd polyglot-chat-system
 
 # build all images
 ./docker-build-all.sh
