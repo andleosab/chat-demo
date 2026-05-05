@@ -10,6 +10,14 @@ export interface ChatMessage {
     timestamp: number;
 }
 
+export interface UserCreatedMessage {
+    type: 'USER_CREATED';
+    userId: string;
+    username: string;
+    email: string;
+    timestamp: number;
+}
+
 export interface MessageResponse {
     id: number | null; // will be undefined for new messages received via WS before they are saved to DB
     conversation_id: number;

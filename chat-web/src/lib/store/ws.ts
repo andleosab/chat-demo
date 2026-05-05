@@ -1,7 +1,9 @@
 import { writable, type Writable } from 'svelte/store';
 import { append } from '$lib/store/messages';         // ← shared store
-import type { ChatMessage } from '$lib/api/types/message';
+import type { ChatMessage, UserCreatedMessage } from '$lib/api/types/message';
 import { PUBLIC_DELIVERY_API_BASE } from '$env/static/public';
+
+export const userCreated: Writable<UserCreatedMessage | null> = writable(null);
 
 // export const messages: Writable<ChatMessage[]> = writable([]);
 export const isConnected: Writable<boolean> = writable(false);
@@ -59,13 +61,16 @@ export async function connect(userUuid: string) {
     };
 
     ws.onmessage = (event) => {
-        // reconnectAttempts = 0;
-        // const data: ChatMessage = JSON.parse(event.data);
-        // messages.update((m) => {
-        //     const next = [...m, data];
-        //     return next.length > MAX_MESSAGES ? next.slice(-MAX_MESSAGES) : next;
-        // });
-        const msg: ChatMessage = JSON.parse(event.data);
+        const rawMsg = JSON.parse(event.data);
+
+        // User created broadcast — update the users store
+        if (rawMsg.type === 'USER_CREATED') {
+            console.log('User created event:', rawMsg);
+            userCreated.set(rawMsg as UserCreatedMessage);
+            return;
+        }
+
+        const msg: ChatMessage = rawMsg;
 
         // Presence events — handle separately, never append to message store
         if (msg.type === 'USER_JOINED' || msg.type === 'USER_LEFT') {
@@ -75,12 +80,12 @@ export async function connect(userUuid: string) {
 
         console.log('Received message:', msg);
 
-        append(msg);   // ← write into shared messages store 
+        append(msg);   // ← write into shared messages store
         // Fire the one-shot listener if a new conversationId comes back
         if (msg.conversationId && newConvoListener) {
-        newConvoListener(msg.conversationId);
-        newConvoListener = null;
-        }               
+            newConvoListener(msg.conversationId);
+            newConvoListener = null;
+        }
     };
 
     ws.onclose = (event) => {

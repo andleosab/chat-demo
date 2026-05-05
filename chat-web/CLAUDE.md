@@ -1,0 +1,72 @@
+# CLAUDE.md — chat-web
+
+SvelteKit 5 app acting as both the UI and BFF. See [README.md](README.md) for full env vars and auth flow details.
+
+## Commands
+
+```bash
+pnpm install
+pnpm dev          # dev server on :3000
+pnpm build        # production build (@sveltejs/adapter-node)
+pnpm check        # svelte-check type checking
+```
+
+Env: copy `env-example` → `.env.local.docker`
+
+## Source layout
+
+```
+src/
+  hooks.server.ts               # BFF: session resolution + JWT injection + /(app)/ guard
+  lib/
+    auth.ts                     # Better Auth server config; databaseHooks provisions chat-user-service
+    auth-client.ts              # Better Auth browser client
+    server/
+      jwt.ts                    # issueServiceToken() / issueWsToken()
+      config.ts                 # env var imports
+    store/
+      ws.ts                     # WebSocket lifecycle (connect/disconnect/send/reconnect)
+      messages.ts               # cursor-paginated message store (seed/append/fetchOlderMessages/reset)
+      user.ts                   # CurrentUser store
+    api/types/                  # shared TS types (conversation, message, user)
+    state/user-session.svelte.ts
+  routes/
+    (app)/                      # auth-gated routes
+      chats/                    # conversation list + [id]/[name] chat view
+      groups/                   # group list + [id]/[name] + new
+      users/                    # user directory
+    api/
+      ws-token/+server.ts       # POST: issues short-lived WS JWT
+      chats/[id]/+server.ts     # GET: cursor-paginated messages proxy
+    sign-in/ sign-up/
+```
+
+## Key patterns
+
+**JWT injection (`hooks.server.ts`):** Overrides `event.fetch` with a version that matches the URL against `SERVICE_MAP` (keyed by `MESSAGE_API_BASE` / `USER_API_BASE`) and injects a signed Bearer token. All `+page.server.ts` files call `fetch()` normally — they have no knowledge of auth. One token per service base is cached per request via `tokenCache`.
+
+**Two token types (`src/lib/server/jwt.ts`):**
+- `issueServiceToken(audience, user)` — signs with raw `JWT_SECRET` string, `exp: 10m`
+- `issueWsToken(audience, user)` — signs with `JWT_SECRET` decoded from base64url to bytes (`JWT_SECRET_BYTES`), `exp: 60s`. Required because Quarkus SmallRye JWT expects raw bytes for JWK key material.
+
+**WebSocket handshake (`store/ws.ts`):** Fetches a WS token from `/api/ws-token`, then connects with two subprotocols: `"bearer-token-carrier"` and the URL-encoded `"quarkus-http-upgrade#Authorization#Bearer <token>"` string. Quarkus unpacks the second protocol into an `Authorization` header before JWT validation.
+
+**Reconnect logic (`store/ws.ts`):** Up to 5 attempts with 3s delay. Custom close code `4400` (server-rejected session) skips reconnect entirely.
+
+**Message store (`store/messages.ts`):** Hybrid server-loaded + live feed.
+- `seed(conversationId, initial)` — populates from server-loaded history, sets cursor to oldest message id
+- `append(msg)` — called by ws.ts on incoming WS message; dedupes by id, ignores other conversations
+- `fetchOlderMessages(conversationId)` — fetches backwards via `/api/chats/[id]?before=<cursor>&limit=30`; backend returns DESC, stored reversed to ASC
+- `reset()` — must be called in `onDestroy` to clear state between conversations
+
+**One-shot new conversation listener (`store/ws.ts`):** `onceNewConversation(cb)` registers a callback that fires once when the server echoes back a message with a populated `conversationId` (new private chat). The callback fires then clears itself; used by ChatView to navigate to the permanent conversation URL.
+
+**User provisioning (`lib/auth.ts`):** `databaseHooks.user.create.after` calls `chat-user-service POST /api/users` with the Better Auth UUID as `userid`. If this call fails, the error propagates and registration rolls back.
+
+## Svelte 5 note
+
+This project uses Svelte 5 runes (`$state`, `$derived`, etc.) and the new snippet/component API. Avoid Svelte 4 patterns (`$:`, `<slot>`, stores as the sole reactive primitive for component-local state).
+This project also uses taiwindcss for styling and svelte port of shadcn UI components.
+See https://www.shadcn-svelte.com/
+
+See details on shadcn at https://www.shadcn-svelte.com/llms.txt

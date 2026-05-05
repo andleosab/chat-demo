@@ -1,12 +1,32 @@
 <!-- src/routes/(app)/users/+page.svelte -->
 <script lang="ts">
   import type { PageProps } from './$types';
+  import type { CreateUserResponse } from '$lib/api/types/user';
   import * as Avatar from '$lib/components/ui/avatar/index.js';
   import { Button } from '$lib/components/ui/button/index.js';
   import MessageSquareIcon from '@lucide/svelte/icons/message-square';
+  import { userCreated } from '$lib/store/ws';
 
   let { data } = $props() as PageProps;
-  let users = $derived(data.users);
+  let wsUsers = $state<CreateUserResponse[]>([]);
+  let users = $derived([...(data.users ?? []), ...wsUsers]);
+
+  $effect(() => {
+    const unsubscribe = userCreated.subscribe(newUser => {
+      if (newUser && !users.some(u => u.userId === newUser.userId)) {
+        wsUsers = [...wsUsers, {
+          userId: newUser.userId,
+          username: newUser.username,
+          email: newUser.email,
+          isActive: true,
+          createdAt: new Date(newUser.timestamp).toISOString(),
+          updatedAt: ''
+        }];
+      }
+    });
+
+    return unsubscribe;
+  });
 
   function initials(name: string) {
     return name.slice(0, 2).toUpperCase();
