@@ -68,70 +68,30 @@ spring:
     init: 
       mode: always	      
 
-#--------------------------------
-# oAuth2 client credentials grant
-# to call another secured service
-#--------------------------------            
-#  security:
-#    oauth2:
-#      client:
-#        registration:
-#          llama_api:
-#            authorization-grant-type: client_credentials
-#            client-id: ${OAUTH2_CLIENT_ID}
-#            client-name: llama_api
-#            client-secret: ${OAUTH2_CLIENT_SECRET}
-#        provider: 
-#          llama_api:
-#            token-uri: https://apigw-st.telus.com/st/token
-            
   jackson:
     deserialization:
       fail-on-unknown-properties: true
       
-# Producer properties
-  kafka.producer.bootstrap-servers: ${kafka.bootstrap.servers:http://localhost:9092}
-  kafka.producer.key-serializer: org.apache.kafka.common.serialization.StringSerializer
-#  kafka.producer.value-serializer: io.cloudevents.kafka.CloudEventSerializer
-  kafka.producer.value-serializer: org.apache.kafka.common.serialization.StringSerializer
-  kafka.producer.group-id: chat
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
+      retries: 1
 
-  kafka.producer.acks: all
-  kafka.producer.retries: 1
+app.jwt.secret: ${JWT_SECRET}
 
-# Common Kafka Properties
-#auto.create.topics.enable=true
-          
-# custom  kafka properties
-#kafka.producer.topic.default: ${KAFKA_PRODUCER_TOPIC:vendorFileMessage}   
-
-app.jwt.secret: ${JWT_SECRET}             
+kafka:
+  topic:
+    user-created: user.created             
 
 ---
-
-#spring:
-#  config:
-#    activate:
-#      on-profile: SSO
-#  security:
-#    oauth2:
-#      resourceserver:
-#        jwt:
-#          issuer-uri: https://teamsso-its04.telus.com
-#          jwk-set-uri: https://apigw-st.telus.com/st/jwks                 
-
----
-
-# -- Environments
-# -- UA - UAT
-# -- ST - Staging
-# -- PR - Production
-# -- ND - or just all non dev
 
 spring:
   config:
     activate:
-      on-profile: ST,PR,ND
+      on-profile: ST,PR
 
     jpa:
         generate-ddl: false

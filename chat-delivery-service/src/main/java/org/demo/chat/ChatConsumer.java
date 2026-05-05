@@ -24,8 +24,6 @@ import jakarta.inject.Inject;
  * then deliver it to the user over WS connection.
  * Otherwise ignore it.
  *
- * @author A.Sabourov
- *
  */
 @ApplicationScoped
 public class ChatConsumer {

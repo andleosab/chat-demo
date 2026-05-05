@@ -1,14 +1,10 @@
 package org.demo.chat;
 
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * 
  * Represents Message.
- *
- * @author A.Sabourov
  *
  */
 @JsonIgnoreProperties(ignoreUnknown = true)

@@ -13,8 +13,6 @@ import org.slf4j.LoggerFactory;
  * 
  * Pretty clear - emit a message to a broker.
  *
- * @author A.Sabourov
- *
  */
 @ApplicationScoped
 public class ChatProducer {

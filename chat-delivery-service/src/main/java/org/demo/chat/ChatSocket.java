@@ -31,8 +31,6 @@ import jakarta.inject.Inject;
  * The Jewel - connects users and other listeners (services)
  * through WS -> Broker
  *
- * @author A.Sabourov
- *
  */
 @Authenticated
 @WebSocket(path = "/chat/{username}")
