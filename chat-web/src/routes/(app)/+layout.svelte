@@ -2,10 +2,10 @@
   import { onMount, onDestroy } from 'svelte';
   import { connect, isConnected, disconnect } from '$lib/store/ws';
   import { currentUser } from '$lib/store/user';
-  import * as Sidebar from '$lib/components/ui/sidebar/index.js';
-  import AppSidebar from '$lib/components/app-sidebar.svelte';
-
   import { userSession } from '$lib/state/user-session.svelte';
+  import * as Tooltip from '$lib/components/ui/tooltip/index.js';
+  import NavRail from '$lib/components/NavRail.svelte';
+  import BottomNav from '$lib/components/BottomNav.svelte';
 
   let { data, children } = $props();
 
@@ -13,20 +13,25 @@
     currentUser.set(data.currentUser);
     connect($currentUser!.userId);
     userSession.currentUser = data.currentUser;
-    // connect(userSession.currentUser!.userId);
-    // Then next step is updating other files that 
-    // import $lib/store/user (ChatView, etc.) to use userSession too.
   });
 
-   onDestroy(() => {
+  onDestroy(() => {
     disconnect();
-  }); 
-
+  });
 </script>
 
-<Sidebar.Provider class="h-svh overflow-hidden">
-  <AppSidebar user={data.currentUser!} isConnected={$isConnected} />
-  <Sidebar.Inset class="overflow-hidden">
-    {@render children()}
-  </Sidebar.Inset>
-</Sidebar.Provider>
+<Tooltip.Provider delayDuration={200}>
+  <div class="flex h-svh overflow-hidden bg-background">
+    <!-- Desktop: icon nav rail -->
+    <NavRail user={data.currentUser!} isConnected={$isConnected} />
+
+    <!-- Content column -->
+    <div class="flex flex-col flex-1 min-w-0 overflow-hidden">
+      <main class="flex-1 overflow-hidden min-h-0">
+        {@render children()}
+      </main>
+      <!-- Mobile: bottom tab bar -->
+      <BottomNav user={data.currentUser!} isConnected={$isConnected} />
+    </div>
+  </div>
+</Tooltip.Provider>
