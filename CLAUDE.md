@@ -69,3 +69,17 @@ Three databases on shared Postgres: `chat-auth` (Better Auth), `chat-user` (Spri
 - Always present a numbered plan before making any file changes
 - Wait for explicit approval before executing
 - Do not proceed if the plan involves more than 3 file changes without confirmation
+
+## Agent skills
+
+### Issue tracker
+
+Issues live in GitHub Issues (`github.com/andleosab/polyglot-chat-system`). See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default five-role label vocabulary (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: one `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
